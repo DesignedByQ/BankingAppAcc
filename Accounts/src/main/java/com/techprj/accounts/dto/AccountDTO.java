@@ -1,28 +1,38 @@
 package com.techprj.accounts.dto;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.techprj.accounts.entity.TransLog;
 import com.techprj.banking.dto.UserProfileDTO;
 import com.techprj.banking.dto.UserProfileDTODeserializer;
 
 public class AccountDTO {
 	
 	private Long accountId;
+	private Long sortCode;
 	private String type;
 	private Double balance;
-	@JsonDeserialize(using = UserProfileDTODeserializer.class)
-	private UserProfileDTO[] userProfileDTO = new UserProfileDTO[2];
-	private TransLogDTO[] transLogDTO;
+	//@JsonDeserialize(using = UserProfileDTODeserializer.class)
+	private List<UserProfileDTO> userProfileDTO;
+	private List<TransLogDTO> transLogDTO;
+	
+	@Autowired
+	ModelMapper modelMapper;
 	
 	public AccountDTO() {
 		super();
 	}
 	
-	public AccountDTO(Long accountId, String type, Double balance, UserProfileDTO[] userProfileDTO,
-			TransLogDTO[] transLogDTO) {
+	public AccountDTO(Long accountId, Long sortCode, String type, Double balance, List<UserProfileDTO> userProfileDTO,
+			List<TransLogDTO> transLogDTO) {
 		super();
 		this.accountId = accountId;
+		this.sortCode = sortCode;
 		this.type = type;
 		this.balance = balance;
 		this.userProfileDTO = userProfileDTO;
@@ -35,6 +45,14 @@ public class AccountDTO {
 
 	public void setAccountId(Long accountId) {
 		this.accountId = accountId;
+	}
+
+	public Long getSortCode() {
+		return sortCode;
+	}
+
+	public void setSortCode(Long sortCode) {
+		this.sortCode = sortCode;
 	}
 
 	public String getType() {
@@ -53,26 +71,28 @@ public class AccountDTO {
 		this.balance = balance;
 	}
 
-	public UserProfileDTO[] getUserProfileDTO() {
+	public List<UserProfileDTO> getUserProfileDTO() {
 		return userProfileDTO;
 	}
 
-	public void setUserProfileDTO(UserProfileDTO[] userProfileDTO) {
+	public void setUserProfileDTO(List<UserProfileDTO> userProfileDTO) {
 		this.userProfileDTO = userProfileDTO;
 	}
 
-	public TransLogDTO[] getTransLogDTO() {
+	public List<TransLogDTO> getTransLogDTO() {
+		
 		return transLogDTO;
 	}
 
-	public void setTransLogDTO(TransLogDTO[] transLogDTO) {
-		this.transLogDTO = transLogDTO;
+	public void setTransLogDTO(List<TransLogDTO> list) {
+		
+		this.transLogDTO = list;
 	}
 
 	@Override
 	public String toString() {
-		return "AccountDTO [accountId=" + accountId + ", type=" + type + ", balance=" + balance + ", userProfileDTO="
-				+ Arrays.toString(userProfileDTO) + ", transLogDTO=" + Arrays.toString(transLogDTO) + "]";
+		return "AccountDTO [accountId=" + accountId + ", sortCode=" + sortCode + ", type=" + type + ", balance="
+				+ balance + ", userProfileDTO=" + userProfileDTO + ", transLogDTO=" + transLogDTO + "]";
 	}
 
 }

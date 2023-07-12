@@ -15,6 +15,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.techprj.accounts.dto.TransLogDTO;
+
 @Entity
 @Table(name="accounts")
 public class Account {
@@ -22,6 +27,7 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long accountId;
+	private Long sortCode;
 	private String type;
 	private Double balance;
 	private Long[] userProfileID = new Long[2];
@@ -32,14 +38,18 @@ public class Account {
 		super();
 	}
 
-	public Account(Long accountId, String type, Double balance, Long[] userProfileID, List<TransLog> translog) {
+	public Account(Long accountId, Long sortCode, String type, Double balance, Long[] userProfileID, List<TransLog> translog) {
 		super();
 		this.accountId = accountId;
+		this.sortCode = sortCode;
 		this.type = type;
 		this.balance = balance;
 		this.userProfileID = userProfileID;
 		this.translog = translog;
 	}
+	
+//	@Autowired
+//	ModelMapper modelMapper;
 
 	public Long getAccountId() {
 		return accountId;
@@ -47,6 +57,14 @@ public class Account {
 
 	public void setAccountId(Long accountId) {
 		this.accountId = accountId;
+	}
+
+	public Long getSortCode() {
+		return sortCode;
+	}
+
+	public void setSortCode(Long sortCode) {
+		this.sortCode = sortCode;
 	}
 
 	public String getType() {
@@ -76,6 +94,33 @@ public class Account {
 	public List<TransLog> getTranslog() {
 		return translog;
 	}
+	
+	public List<TransLogDTO> getTranslogDTO() {
+		
+		//List<TransLogDTO> tl = (List<TransLogDTO>) modelMapper.map(translog, TransLogDTO.class);
+		
+		List<TransLogDTO> tdtol = new ArrayList();
+		
+		for(TransLog t: translog) {
+			
+			TransLogDTO tdto = new TransLogDTO();
+			
+			tdto.setAmount(t.getAmount());
+			tdto.setDate(t.getDate());
+			tdto.setFrom(t.getFrom());
+			tdto.setNewBal(t.getNewBal());
+			tdto.setOldBal(t.getOldBal());
+			tdto.setReference(t.getReference());
+			tdto.setTo(t.getTo());
+			tdto.setTransLogId(t.getTransLogId());
+			
+			tdtol.add(tdto);
+			
+		}	
+		
+		return tdtol;
+		
+	}
 
 	public void setTranslog(List<TransLog> translog) {
 		this.translog = translog;
@@ -83,7 +128,7 @@ public class Account {
 
 	@Override
 	public String toString() {
-		return "Account [accountId=" + accountId + ", type=" + type + ", balance=" + balance + ", userProfileID="
+		return "Account [accountId=" + accountId + ", sortCode=" + sortCode + ", type=" + type + ", balance=" + balance + ", userProfileID="
 				+ Arrays.toString(userProfileID) + ", translog=" + translog + "]";
 	}
 	
