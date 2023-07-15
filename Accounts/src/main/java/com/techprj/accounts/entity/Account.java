@@ -1,5 +1,6 @@
 package com.techprj.accounts.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,7 @@ import com.techprj.accounts.dto.TransLogDTO;
 
 @Entity
 @Table(name="accounts")
-public class Account {
+public class Account implements Serializable {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

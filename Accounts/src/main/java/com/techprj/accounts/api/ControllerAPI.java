@@ -1,5 +1,6 @@
 package com.techprj.accounts.api;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ public class ControllerAPI {
 	
 	@GetMapping(value="/getaccount/{accountid}", consumes = {MediaType.ALL_VALUE}, produces = {"application/json", "application/xml"})
 	public ResponseEntity<AccountDTO> getAcc(@PathVariable("accountid") Long accountid) {
+		System.out.println(12345);
 		return ResponseEntity.status(HttpStatus.OK).body(serviceDAOImpl.getAccount(accountid));
 	}
 	
@@ -48,6 +50,18 @@ public class ControllerAPI {
 		
 		System.out.println(fields);
 		return ResponseEntity.status(HttpStatus.OK).body(serviceDAOImpl.updateBalance(accid, fields));
+	}
+	
+	@PatchMapping(value="/transfer/from/{accid}/to/{accid1}", consumes = {MediaType.ALL_VALUE})
+	public ResponseEntity<List<AccountDTO>> updateBaInt(@PathVariable("accid") Long accid, @PathVariable("accid1") Long accid1, @RequestBody Map<Object, Object> fields) {
+		
+		Object balanceObj = fields.get("balance");
+		double balance = Double.parseDouble(balanceObj.toString());
+		
+		fields.put("balance", balance);
+		
+		System.out.println(fields);
+		return ResponseEntity.status(HttpStatus.OK).body(serviceDAOImpl.updateBalanceInt(accid, accid1, fields));
 	}
 
 }

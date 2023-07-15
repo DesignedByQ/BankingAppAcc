@@ -1,5 +1,6 @@
 package com.techprj.accounts.dto;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import com.techprj.accounts.entity.TransLog;
 import com.techprj.banking.dto.UserProfileDTO;
 import com.techprj.banking.dto.UserProfileDTODeserializer;
 
-public class AccountDTO {
+public class AccountDTO implements Serializable {
 	
 	private Long accountId;
 	private Long sortCode;

@@ -72,15 +72,21 @@ public class ServiceDAOImpl implements ServiceDAO{
 
 	@Override
 	public AccountDTO getAccount(Long accountid) {
-
+		System.out.println(111);
+		System.out.println(accountid);
 		Optional<Account> a = accountRepo.findById(accountid);
 		
+		if(a.isEmpty()) {
+		System.out.println("empty");
+		}
 		if(a.isPresent()) {
+			
+			System.out.println("hello");
 			
 			List<UserProfileDTO> upl = new ArrayList();
 			
 			UserProfileDTO updto = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ a.get().getUserProfileID()[0], UserProfileDTO.class);
-			
+			System.out.println(updto);
 			upl.add(updto);
 			
 			if(a.get().getUserProfileID()[1] != null) {
@@ -186,8 +192,171 @@ public class ServiceDAOImpl implements ServiceDAO{
 		
 	}
 	
-	
-	
-	
+	@Override
+	public List<AccountDTO> updateBalanceInt(Long accid, Long accid1, Map<Object, Object> fields) {
+		
+		//get the value of the to acc and add it to the field balance before patching
+		//get the val of the from acc and minus the field balance the patch the result
+		//patch both accounts
+		//create a transaction for both accounts
+		//return a accountDTO
+		
+		//Find accounts
+		
+		Optional<Account> a = accountRepo.findById(accid);
+		//System.out.println(a.get());
+		Optional<Account> a1 = accountRepo.findById(accid1);
+		//System.out.println(a1.get());
+		//Create transaction
+		TransLogDTO trans = new TransLogDTO();
+		trans.setDate(LocalDate.now());
+		trans.setAmount(Double.parseDouble(fields.get("balance").toString()));
+		trans.setFrom(accid);
+		trans.setOldBal(a.get().getBalance());
+		trans.setTo(accid1);
+		trans.setNewBal(a.get().getBalance() - Double.parseDouble(fields.get("balance").toString()));
+		trans.setReference(((Map<Object, Object>) fields.get("transLogDTO")).get("reference").toString());
+		
+		TransLog transConv = modelMapper.map(trans, TransLog.class);
+		System.out.println(transConv);
+		AccountDTO adto = new AccountDTO();
+		
+		TransLogDTO trans1 = new TransLogDTO();
+		trans1.setDate(LocalDate.now());
+		trans1.setAmount(Double.parseDouble(fields.get("balance").toString()));
+		trans1.setFrom(accid);
+		trans1.setOldBal(a1.get().getBalance());
+		trans1.setTo(accid1);
+		trans1.setNewBal(a1.get().getBalance() + Double.parseDouble(fields.get("balance").toString()));
+		trans1.setReference(((Map<Object, Object>) fields.get("transLogDTO")).get("reference").toString());
+		
+		TransLog transConv1 = modelMapper.map(trans1, TransLog.class);
+		System.out.println(transConv1);
+		AccountDTO adto1 = new AccountDTO();
+		
+		if(a.isPresent() & a1.isPresent()) {
+			
+			//From account
+			
+			Double originalBal = Double.parseDouble(fields.get("balance").toString());
+			
+			Double bal = a.get().getBalance();
+			
+			bal -= Double.parseDouble(fields.get("balance").toString());
+			
+			fields.put("balance", bal);
+			
+			//MODELmap a to a dto the switch utils to dto class patch the changes then modelmap to an entity then save
+			
+			AccountDTO aConv = modelMapper.map(a.get(), AccountDTO.class);
+			
+	        fields.forEach((key, value) -> {
+	        	
+	        	if(key != "transLogDTO") {
+	        	
+		        	Field field = ReflectionUtils.findRequiredField(AccountDTO.class, (String) key);
+		        	field.setAccessible(true);
+		        	ReflectionUtils.setField(field, aConv, value);
+		        	
+	        	}
+		        	
+	        });
+	        
+	        Account aConvSaved = accountRepo.save(modelMapper.map(aConv, Account.class));
+	        
+	        fields.put("balance", originalBal);
+	        	        
+	        //To account
+	        
+			Double bal1 = a1.get().getBalance();
+			
+			bal1 += Double.parseDouble(fields.get("balance").toString());
+			
+			fields.put("balance", bal1);
+	        
+			AccountDTO aConv1 = modelMapper.map(a1.get(), AccountDTO.class);
+			
+			//you want the patching to stop at transLogDTO then to run a separate patching for transLogDto
+	        fields.forEach((key, value) -> {
+	        	
+	        	if(key != "transLogDTO") {
+	        	
+		        	Field field1 = ReflectionUtils.findRequiredField(AccountDTO.class, (String) key);
+		        	field1.setAccessible(true);
+		        	ReflectionUtils.setField(field1, aConv1, value);
+		        	
+	        	}
+		        	
+	        });
+	        
+	        Account aConvSaved1 = accountRepo.save(modelMapper.map(aConv1, Account.class));
+	        
+	        //add the transaction before saving it
+	        
+	        List<TransLog> tlog = aConvSaved.getTranslog();
+	        tlog.add(transConv);
+	        
+	        aConvSaved.setTranslog(tlog);
+	        
+	        Account updatedAcc = accountRepo.save(aConvSaved);
+	               	        
+	        //Build AccountDTO
+		
+			adto.setAccountId(updatedAcc.getAccountId());
+			adto.setSortCode(updatedAcc.getSortCode());
+			adto.setType(updatedAcc.getType());
+			adto.setBalance(updatedAcc.getBalance());
+			adto.setTransLogDTO(updatedAcc.getTranslogDTO());
+	        
+			List<UserProfileDTO> upl = new ArrayList();
+			
+			for(int i = 0; i < updatedAcc.getUserProfileID().length; i++) {
+				
+				if(updatedAcc.getUserProfileID()[i] != null) {
+					UserProfileDTO updto = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ updatedAcc.getUserProfileID()[i], UserProfileDTO.class);
+					System.out.println(updto);
+					upl.add(updto);
+					
+				}
+			}
+			
+			adto.setUserProfileDTO(upl);
+			
+	        List<TransLog> tlog1 = aConvSaved1.getTranslog();
+	        tlog1.add(transConv1);
+	        
+	        aConvSaved1.setTranslog(tlog1);
+	        
+	        Account updatedAcc1 = accountRepo.save(aConvSaved1);
+			
+			adto1.setAccountId(updatedAcc1.getAccountId());
+			adto1.setSortCode(updatedAcc1.getSortCode());
+			adto1.setType(updatedAcc1.getType());
+			adto1.setBalance(updatedAcc1.getBalance());
+			adto1.setTransLogDTO(updatedAcc1.getTranslogDTO());
+	        
+			List<UserProfileDTO> upl1 = new ArrayList();
+			
+			for(int i = 0; i < updatedAcc1.getUserProfileID().length; i++) {
+				
+				if(updatedAcc1.getUserProfileID()[i] != null) {
+					UserProfileDTO updto = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ updatedAcc1.getUserProfileID()[i], UserProfileDTO.class);
+					System.out.println(updto);
+					upl1.add(updto);
+					
+				}
+			}
+			
+			adto1.setUserProfileDTO(upl1);
+		
+		}
+		
+		List<AccountDTO> rtndAccs = new ArrayList<>();
+		rtndAccs.add(adto);
+		rtndAccs.add(adto1);
+		
+		return rtndAccs;
+		
+	}
 	
 }
