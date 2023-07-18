@@ -58,44 +58,94 @@ public class ServiceDAOImpl implements ServiceDAO{
 		
 		Account a = new Account();
 		a.setBalance(accountDTO.getBalance());
+		a.setSortCode(accountDTO.getSortCode());
 		a.setType(accountDTO.getType());
 		a.setUserProfileID(ids);
 		a.setTranslog(null);
 			
 		Account aSaved = accountRepo.saveAndFlush(a);
 		
-		accountDTO.setAccountId(aSaved.getAccountId());
+		//accountDTO.setAccountId(aSaved.getAccountId());
+		AccountDTO adto = new AccountDTO();
+		adto.setAccountId(aSaved.getAccountId());
+		adto.setBalance(aSaved.getBalance());
+		adto.setSortCode(aSaved.getSortCode());
+		adto.setType(aSaved.getType());
+		//adto.setTransLogDTO(aSaved.getTranslogDTO());
+		
+		List<UserProfileDTO> upl = new ArrayList();
+		
+		Long id = aSaved.getUserProfileID()[0];
+		
+		UserProfileDTO updto = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ id, UserProfileDTO.class);
+		
+		upl.add(updto);
+		
+		if(aSaved.getUserProfileID()[1] != null) {
+			
+			Long id1 = aSaved.getUserProfileID()[1];
+			
+			UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ id1, UserProfileDTO.class);
+			
+			upl.add(updto1);
+			
+		}	
+		
+		adto.setUserProfileDTO(upl);
 	
-		return accountDTO;
+		return adto;
 		
 	}
 
 	@Override
 	public AccountDTO getAccount(Long accountid) {
-		System.out.println(111);
-		System.out.println(accountid);
+		//System.out.println(111);
+		//System.out.println(accountid);
 		Optional<Account> a = accountRepo.findById(accountid);
+		//System.out.println(a.get());
+		//AccountDTO adto1 = new AccountDTO();
+//		if(a.isEmpty()) {
+//		System.out.println("empty");
+//		}
 		
-		if(a.isEmpty()) {
-		System.out.println("empty");
-		}
+//		a.get().getUserProfileID()[0] = (long) 1;
+//		a.get().getUserProfileID()[1] = (long) 9;
+		
+		System.out.println(a.get());
 		if(a.isPresent()) {
 			
-			System.out.println("hello");
+			//System.out.println("hello");
 			
 			List<UserProfileDTO> upl = new ArrayList();
 			
-			UserProfileDTO updto = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ a.get().getUserProfileID()[0], UserProfileDTO.class);
-			System.out.println(updto);
+			//when creatiing an account need to inject the up ids correct instead of null
+			Long id = a.get().getUserProfileID()[0];
+			//Long id2 = Long.parseLong(id);
+			//System.out.println(id.TYPE);
+			
+			String url = "http://localhost:8080/api/getprobyid/"+id;
+		
+			UserProfileDTO updto = restTemplate.getForObject(url, UserProfileDTO.class);
+			System.out.println(updto.getEmail());
 			upl.add(updto);
+			
+			System.out.println("-------------------------");
+			
+			//System.out.println(a.get().getUserProfileID()[1]);
+		
 			
 			if(a.get().getUserProfileID()[1] != null) {
 				
-				UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ a.get().getUserProfileID()[1], UserProfileDTO.class);
+				Long id1 = a.get().getUserProfileID()[1];
+				//System.out.println(id1);
+				
+				UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+id1, UserProfileDTO.class);
 				
 				upl.add(updto1);
 				
 			}
+			
+			System.out.println(upl.get(1));
 			
 			AccountDTO adto = new AccountDTO();
 			adto.setAccountId(a.get().getAccountId());
@@ -108,7 +158,9 @@ public class ServiceDAOImpl implements ServiceDAO{
 			return adto;
 			
 		}
+		
 		return null;
+		
 	}
 
 	@Override
