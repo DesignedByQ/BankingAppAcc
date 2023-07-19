@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -31,6 +32,7 @@ public class Account implements Serializable {
 	private Long sortCode;
 	private String type;
 	private Double balance;
+	@Column(name = "user_profileid")
 	private Long[] userProfileID = new Long[2];
 	@OneToMany(mappedBy="account", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<TransLog> translog = new ArrayList<>();
