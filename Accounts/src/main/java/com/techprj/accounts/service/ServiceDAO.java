@@ -15,4 +15,6 @@ public interface ServiceDAO {
 	
 	List<AccountDTO> updateBalanceInt(Long accid, Long accid1, Map<Object, Object> fields);
 
+	AccountDTO updateBalanceExt(Long accid, Long accid1, Map<Object, Object> fields);
+
 }

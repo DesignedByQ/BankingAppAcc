@@ -643,246 +643,176 @@ public class ServiceDAOImpl implements ServiceDAO{
 	
 	}
 	
-}
+	@Override
+	public AccountDTO updateBalanceExt(Long accid, Long accid1, Map<Object, Object> fields) {
+		
+		//From account
+		
+		//Find Account
+		
+		Optional<Account> a = accountRepo.findById(accid);
+		System.out.println("11111111111111111111111111111111");
+		System.out.println(a);
+		//Create dto transaction details for from acc 
+		TransLogDTO trans = new TransLogDTO();
+		trans.setDate(LocalDate.now());
+		trans.setAmount(Double.parseDouble(fields.get("balance").toString()));
+		trans.setFrom(accid);
+		trans.setOldBal(a.get().getBalance());
+		trans.setTo(accid1);
+		trans.setNewBal(a.get().getBalance() - Double.parseDouble(fields.get("balance").toString()));
+		trans.setReference(((Map<Object, Object>) fields.get("transLogDTO")).get("reference").toString());
+		
+		//Make entity version of the dto details 
+		TransLog transConv = modelMapper.map(trans, TransLog.class);
+		//System.out.println(transConv);
+		System.out.println("22222222222222222222222222222222222222222");
+		System.out.println(transConv);
+		//If entity is found, +/- balance in field to suit transaction before patching
+		if(a.isPresent()) {
+		
+			Double originalBal = Double.parseDouble(fields.get("balance").toString());
+			
+			Double bal = a.get().getBalance();
+			
+			bal -= Double.parseDouble(fields.get("balance").toString());
+			
+			fields.put("balance", bal);
+		
+			//Create dto of the found account entity to cycle through with a patch
+			AccountDTO aConv = new AccountDTO();
+			aConv.setAccountId(a.get().getAccountId());
+			aConv.setBalance(a.get().getBalance());
+			aConv.setSortCode(a.get().getSortCode());
+			aConv.setType(a.get().getType());
+			
+			//Create up list to add to aConv
+			List<UserProfileDTO> upl = new ArrayList();
 
-////Find accounts
-//
-//Optional<Account> a = accountRepo.findById(accid);
-////System.out.println(a.get());
-//Optional<Account> a1 = accountRepo.findById(accid1);
-////System.out.println(a1.get());
-////Create transaction
-//TransLogDTO trans = new TransLogDTO();
-//trans.setDate(LocalDate.now());
-//trans.setAmount(Double.parseDouble(fields.get("balance").toString()));
-//trans.setFrom(accid);
-//trans.setOldBal(a.get().getBalance());
-//trans.setTo(accid1);
-//trans.setNewBal(a.get().getBalance() - Double.parseDouble(fields.get("balance").toString()));
-//trans.setReference(((Map<Object, Object>) fields.get("transLogDTO")).get("reference").toString());
-//
-//TransLog transConv = modelMapper.map(trans, TransLog.class);
-//System.out.println(transConv);
-//AccountDTO adto = new AccountDTO();
-//
-//TransLogDTO trans1 = new TransLogDTO();
-//trans1.setDate(LocalDate.now());
-//trans1.setAmount(Double.parseDouble(fields.get("balance").toString()));
-//trans1.setFrom(accid);
-//trans1.setOldBal(a1.get().getBalance());
-//trans1.setTo(accid1);
-//trans1.setNewBal(a1.get().getBalance() + Double.parseDouble(fields.get("balance").toString()));
-//trans1.setReference(((Map<Object, Object>) fields.get("transLogDTO")).get("reference").toString());
-//
-//TransLog transConv1 = modelMapper.map(trans1, TransLog.class);
-//System.out.println(transConv1);
-//AccountDTO adto1 = new AccountDTO();
-//
-//if(a.isPresent() & a1.isPresent()) {
-//	
-//	//From account
-//	
-//	Double originalBal = Double.parseDouble(fields.get("balance").toString());
-//	
-//	Double bal = a.get().getBalance();
-//	
-//	bal -= Double.parseDouble(fields.get("balance").toString());
-//	
-//	fields.put("balance", bal);
-//	
-//	//MODELmap a to a dto the switch utils to dto class patch the changes then modelmap to an entity then save
-//	System.out.println("cccccccccccccccccccccccccccccccccccc");
-//	System.out.println(a.get());
-//	//AccountDTO aConv = modelMapper.map(a.get(), AccountDTO.class);
-//	AccountDTO aConv = new AccountDTO();
-//	aConv.setAccountId(a.get().getAccountId());
-//	aConv.setBalance(a.get().getBalance());
-//	aConv.setSortCode(a.get().getSortCode());
-//	aConv.setType(a.get().getType());
-//	
-//	//Create up list
-//	List<UserProfileDTO> upl = new ArrayList();
-//
-//	Long id = a.get().getUserProfileID()[0];
-//	
-//	String url = "http://localhost:8080/api/getprobyid/"+id;
-//
-//	UserProfileDTO updto = restTemplate.getForObject(url, UserProfileDTO.class);
-//	
-//	upl.add(updto);
-//	
-//	if(a.get().getUserProfileID()[1] != null) {
-//		
-//		Long id1 = a.get().getUserProfileID()[1];
-//		
-//		UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+id1, UserProfileDTO.class);
-//		
-//		upl.add(updto1);
-//		
-//		System.out.println(upl.get(1));
-//		
-//	}
-//	
-//	aConv.setUserProfileDTO(upl);
-//	
-//	System.out.println(aConv);
-//	
-//	//Patch and save the DTO you've just created
-//    fields.forEach((key, value) -> {
-//    	
-//    	if(key != "transLogDTO" & key != "userProfileDTO") {
-//    	
-//        	Field field = ReflectionUtils.findRequiredField(AccountDTO.class, (String) key);
-//        	field.setAccessible(true);
-//        	ReflectionUtils.setField(field, aConv, value);
-//        	
-//    	}
-//        	
-//    });
-//    
-//    Account aConvSaved = accountRepo.save(modelMapper.map(aConv, Account.class));
-//    
-//    fields.put("balance", originalBal);
-//    	        
-//    //To account
-//    
-//	Double bal1 = a1.get().getBalance();
-//	
-//	bal1 += Double.parseDouble(fields.get("balance").toString());
-//	
-//	fields.put("balance", bal1);
-//    
-//	AccountDTO aConv1 = new AccountDTO();
-//	aConv1.setAccountId(a1.get().getAccountId());
-//	aConv1.setBalance(a1.get().getBalance());
-//	aConv1.setSortCode(a1.get().getSortCode());
-//	aConv1.setType(a1.get().getType());
-//	
-//	//Create up list
-//	List<UserProfileDTO> upl1 = new ArrayList();
-//
-//	Long id2 = a1.get().getUserProfileID()[0];
-//	
-//	String url2 = "http://localhost:8080/api/getprobyid/"+id2;
-//
-//	UserProfileDTO updto2 = restTemplate.getForObject(url2, UserProfileDTO.class);
-//	
-//	upl1.add(updto2);
-//	
-//	if(a1.get().getUserProfileID()[1] != null) {
-//		
-//		Long id3 = a1.get().getUserProfileID()[1];
-//		
-//		UserProfileDTO updto3 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+id3, UserProfileDTO.class);
-//		
-//		upl1.add(updto3);
-//		
-//		System.out.println(upl1.get(1));
-//		
-//	}
-//	
-//	aConv1.setUserProfileDTO(upl1);
-//	
-//	System.out.println(aConv1);
-//	
-//	//you want the patching to stop at transLogDTO then to run a separate patching for transLogDto
-//    fields.forEach((key, value) -> {
-//    	
-//    	if(key != "transLogDTO" & key != "userProfileDTO") {
-//    	
-//        	Field field1 = ReflectionUtils.findRequiredField(AccountDTO.class, (String) key);
-//        	field1.setAccessible(true);
-//        	ReflectionUtils.setField(field1, aConv1, value);
-//        	
-//    	}
-//        	
-//    });
-//    
-//    Account aConvSaved1 = accountRepo.save(modelMapper.map(aConv1, Account.class));
-//    System.out.println("aConvSaved1");
-//    System.out.println(aConvSaved1);
-//    //create list from exisiting logs then add the new transaction before saving it
-//    
-//    List<TransLog> tlog = aConvSaved.getTranslog();
-////    System.out.println("existing logs");
-//    //if is true
-////    System.out.println(tlog.get(0));
-//    tlog.add(transConv);
-//    
-//    aConvSaved.setTranslog(tlog);
-//    System.out.println("existing logs");
-//    System.out.println(aConvSaved);
-//    
-//    Account updatedAcc = accountRepo.save(aConvSaved);
-//           	        
-//    //Build AccountDTO
-//
-//	adto.setAccountId(updatedAcc.getAccountId());
-//	adto.setSortCode(updatedAcc.getSortCode());
-//	adto.setType(updatedAcc.getType());
-//	adto.setBalance(updatedAcc.getBalance());
-//	adto.setTransLogDTO(updatedAcc.getTranslogDTO());
-//    
-//	List<UserProfileDTO> upl3 = new ArrayList();
-//	
-//	for(int i = 0; i < updatedAcc.getUserProfileID().length; i++) {
-//		
-//		if(updatedAcc.getUserProfileID()[i] != null) {
-//			UserProfileDTO updto3 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ updatedAcc.getUserProfileID()[i], UserProfileDTO.class);
-//			System.out.println("------------------------------");
-//			System.out.println(updto3);
-//			System.out.println("..............................");
-//			upl3.add(updto3);
-//			
-//		}
-//	}
-//	
-//	adto.setUserProfileDTO(upl3);
-//	System.out.println("------------------------------");
-//	System.out.println(upl3);
-//	System.out.println("..............................");
-//	
-//    List<TransLog> tlog1 = aConvSaved1.getTranslog();
-//    tlog1.add(transConv1);
-//    
-//    aConvSaved1.setTranslog(tlog1);
-//    
-//    Account updatedAcc1 = accountRepo.save(aConvSaved1);
-//	
-//	adto1.setAccountId(updatedAcc1.getAccountId());
-//	adto1.setSortCode(updatedAcc1.getSortCode());
-//	adto1.setType(updatedAcc1.getType());
-//	adto1.setBalance(updatedAcc1.getBalance());
-//	adto1.setTransLogDTO(updatedAcc1.getTranslogDTO());
-//    
-//	List<UserProfileDTO> upl4 = new ArrayList();
-//	
-//	for(int i = 0; i < updatedAcc1.getUserProfileID().length; i++) {
-//		
-//		if(updatedAcc1.getUserProfileID()[i] != null) {
-//			UserProfileDTO updto4 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ updatedAcc1.getUserProfileID()[i], UserProfileDTO.class);
-//			System.out.println("------------------------------");
-//			System.out.println(updto4);
-//			System.out.println("..............................");
-//			upl4.add(updto4);
-//			
-//		}
-//	}
-//	
-//	adto1.setUserProfileDTO(upl4);
-//	System.out.println("------------------------------");
-//	System.out.println(upl4);
-//	System.out.println("..............................");
-//
-//}
-//
-//List<AccountDTO> rtndAccs = new ArrayList<>();
-//rtndAccs.add(adto);
-//rtndAccs.add(adto1);
-//
-//return rtndAccs;
-//
-//}
+			Long id = a.get().getUserProfileID()[0];
+			
+			String url = "http://localhost:8080/api/getprobyid/"+id;
+		
+			UserProfileDTO updto = restTemplate.getForObject(url, UserProfileDTO.class);
+			
+			upl.add(updto);
+			
+			if(a.get().getUserProfileID()[1] != null) {
+				
+				Long id1 = a.get().getUserProfileID()[1];
+				
+				UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+id1, UserProfileDTO.class);
+				
+				upl.add(updto1);
+				
+				//System.out.println(upl.get(1));
+				
+			}
+			
+			aConv.setUserProfileDTO(upl);
+			System.out.println("3333333333333333333333333333333333");
+			System.out.println(aConv);
+			//System.out.println(aConv);
+			//The patch will update the balance for now only
+			
+			//Patch and save the DTO you've just created
+	        fields.forEach((key, value) -> {
+	        	
+	        	if(key != "transLogDTO" & key != "userProfileDTO") {
+	        	
+		        	Field field = ReflectionUtils.findRequiredField(AccountDTO.class, (String) key);
+		        	field.setAccessible(true);
+		        	ReflectionUtils.setField(field, aConv, value);
+		        	
+	        	}
+		        	
+	        });
+			System.out.println("4444444444444444444444444444444444");
+			System.out.println(aConv);
+	        
+	        //create a entity from aConv to be saved with new ups and balance!!!
+	        
+	        Account aConvEnt = new Account();
+	        aConvEnt.setAccountId(aConv.getAccountId());
+	        aConvEnt.setBalance(aConv.getBalance());
+	        aConvEnt.setSortCode(aConv.getSortCode());
+	        aConvEnt.setType(aConv.getType());
+	        
+	        //Add the UP ids to the entity
+	        Long[] ids = new Long[2];
+	        
+	        for(int i = 0; i < aConv.getUserProfileDTO().size(); i++) {
+	        	
+	        	ids[i] = aConv.getUserProfileDTO().get(i).getIdUserProfile();
+	        	
+	        }
+	        
+	        aConvEnt.setUserProfileID(ids);
+	              
+	        //create transaction list from existing logs then add the new transaction before saving the entity
+	        //why isnt it storing previous transactons
+	        List<TransLog> tlog = new ArrayList();
+	        
+	        if(a.get().getTranslog() != null) {
+	        
+		        for(TransLog tl: a.get().getTranslog()) {
+		        	tlog.add(tl);
+		        }
+		        
+	        }
+	        
+	        tlog.add(transConv);
+	        
+	        aConvEnt.setTranslog(tlog);
+	        
+			System.out.println("5555555555555555555555555555555");
+			System.out.println(aConvEnt);
+	        
+	        //Now you have entity with all fields updated now save it
+	        
+	        Account updatedAcc = accountRepo.save(aConvEnt);
+			System.out.println("666666666666666666666666666666");
+			System.out.println(updatedAcc);
+	        //Reset the balance for the to acc
+	        fields.put("balance", originalBal);
+  
+	        //Build AccountDTO from the entity to be returned to FE
+			AccountDTO adto = new AccountDTO();
+			adto.setAccountId(updatedAcc.getAccountId());
+			adto.setSortCode(updatedAcc.getSortCode());
+			adto.setType(updatedAcc.getType());
+			adto.setBalance(updatedAcc.getBalance());
+			adto.setTransLogDTO(updatedAcc.getTranslogDTO());
+			
+			//Add UPdto's 
+			List<UserProfileDTO> upl1 = new ArrayList();
+			
+			for(int i = 0; i < updatedAcc.getUserProfileID().length; i++) {
+				
+				if(updatedAcc.getUserProfileID()[i] != null) {
+					
+					UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+ updatedAcc.getUserProfileID()[i], UserProfileDTO.class);
+
+					upl1.add(updto1);
+					
+				}
+			}
+			
+			adto.setUserProfileDTO(upl1);
+			System.out.println("777777777777777777777777777777");
+			System.out.println(adto);
+
+			return adto;
+		}
+		
+		return null;
+	
+	}
+	
+}
+	
+
+
 		
 	
 		
