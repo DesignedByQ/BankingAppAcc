@@ -1,8 +1,15 @@
 package com.techprj.accounts.dto;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.logging.Logger;
 
-public class TransLogDTO {
+public class TransLogDTO implements Serializable {
+	private static final Logger LOGGER = Logger.getLogger(TransLogDTO.class.getName());
 	
 	private Long transLogId;
 	private LocalDate date;
@@ -99,5 +106,20 @@ public class TransLogDTO {
 		return "TransLogDTO [transLogId=" + transLogId + ", date=" + date + ", oldBal=" + oldBal + ", from=" + from
 				+ ", amount=" + amount + ", reference=" + reference + ", newBal=" + newBal + ", to=" + to + "]";
 	}
+	
+    public static TransLogDTO deserialize(byte[] bytes) {
+        LOGGER.info("Deserialization started.");
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+             ObjectInput in = new ObjectInputStream(bis)) {
+            TransLogDTO obj = (TransLogDTO) in.readObject();
+            LOGGER.info("Deserialization successful.");
+            return obj;
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.warning("Deserialization failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 }

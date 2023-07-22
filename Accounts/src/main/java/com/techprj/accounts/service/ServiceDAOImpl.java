@@ -1,5 +1,6 @@
 package com.techprj.accounts.service;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import com.techprj.banking.dto.UserProfileDTO;
 
 @Service(value="ServiceDAO")
 @Transactional
-public class ServiceDAOImpl implements ServiceDAO{
+public class ServiceDAOImpl implements ServiceDAO, Serializable {
 	
 	@Autowired
 	ModelMapper modelMapper;
@@ -127,23 +128,13 @@ public class ServiceDAOImpl implements ServiceDAO{
 		//System.out.println(111);
 		//System.out.println(accountid);
 		Optional<Account> a = accountRepo.findById(accountid);
+		//System.out.println(11111111);
 		//System.out.println(a.get());
 		AccountDTO adto1 = new AccountDTO();
-//		if(a.isEmpty()) {
-//		System.out.println("empty");
-//		}
-		
-		//Set up id in long array
-//		a.get().getUserProfileID()[0] = (long) 1;
-//		a.get().getUserProfileID()[1] = (long) 9;
-//		
-//		Account as = accountRepo.save(a.get());
-//		
-//		System.out.println(as);
 		
 		if(a.isPresent()) {
-			
-			System.out.println(a.get());
+//			System.out.println(2222222);
+//			System.out.println(a.get());
 		
 			List<UserProfileDTO> upl = new ArrayList();
 			
@@ -155,14 +146,15 @@ public class ServiceDAOImpl implements ServiceDAO{
 			String url = "http://localhost:8080/api/getprobyid/"+id;
 		
 			UserProfileDTO updto = restTemplate.getForObject(url, UserProfileDTO.class);
-			//System.out.println(updto.getEmail());
+//			System.out.println(33333333);
+//			System.out.println(updto);
 			upl.add(updto);
 			
-			System.out.println("-------------------------");
-			System.out.println(a.get());
+//			System.out.println("444444444444444");
+//			System.out.println(a.get());
 			//System.out.println(a.get().getUserProfileID()[1]);
-		
-			System.out.println(upl.get(0));
+//			System.out.println(5555555);
+//			System.out.println(upl.get(0));
 			
 			if(a.get().getUserProfileID()[1] != null) {
 				
@@ -172,11 +164,12 @@ public class ServiceDAOImpl implements ServiceDAO{
 				UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+id1, UserProfileDTO.class);
 				
 				upl.add(updto1);
-				
-				System.out.println(upl.get(1));
+//				System.out.println(666666);
+//				System.out.println(upl.get(1));
 				
 			}
-			System.out.println(a.get());
+//			System.out.println(7777777);
+//			System.out.println(a.get());
 			//System.out.println(upl.get(1));
 			
 			AccountDTO adto = new AccountDTO();
@@ -196,8 +189,8 @@ public class ServiceDAOImpl implements ServiceDAO{
 				tldto.add(tdto);
 				
 			}
-			
-			System.out.println(tldto);
+//			System.out.println(88888888);
+//			System.out.println(tldto);
 			
 			List<TransLog> tl1 = transRepo.findByToAcc(a.get().getAccountId());
 			
@@ -211,8 +204,9 @@ public class ServiceDAOImpl implements ServiceDAO{
 			
 			adto.setTransLogDTO(tldto);
 			adto.setUserProfileDTO(upl);
-			System.out.println(a.get());
-			System.out.println(upl.get(0));
+//			System.out.println(99999);
+//			System.out.println(a.get());
+//			System.out.println(upl.get(0));
 			return adto;
 			
 		}
@@ -221,6 +215,100 @@ public class ServiceDAOImpl implements ServiceDAO{
 		//return null;
 		
 	}
+	
+	@Override
+	public Object[] getAccounts(long userid) {
+		
+		System.out.println("********************************");
+		
+		List<Account> allAccounts = accountRepo.findAll();
+		
+		//System.out.println(allAccounts);
+		
+		//cycle threw the user id column nested loop
+		
+		int len = 0;
+		
+		//Holds all accounts of a single user
+		List<Account> accList = new ArrayList();
+		
+		List<Long> anCheck = new ArrayList();
+
+		for(Account a: allAccounts) {
+			
+			//Define how many accounts the user holds and apply it to the outer array			
+			for(int i = 0; i < a.getUserProfileID().length; i++) {
+			
+				if((a.getUserProfileID()[i] != null) && (a.getUserProfileID()[i] == userid)) {
+					len++;
+					if(!anCheck.contains(a.getAccountId())) {
+						accList.add(a);
+						anCheck.add(a.getAccountId());
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		//Outer array that will hold multiple arrays of account details
+		Object[] arr = new Object[len];
+		
+		//Add account details to returned object
+		for(int i = 0; i < arr.length; i++) {
+			
+			Object[] acc = new Object[5];
+		
+			acc[0] = accList.get(i).getAccountId();
+			acc[1] = accList.get(i).getSortCode();
+			acc[2] = accList.get(i).getType();
+			acc[3] = accList.get(i).getBalance();
+			
+			//find the transaction list
+			Optional<Account> a = accountRepo.findById(accList.get(i).getAccountId());
+			
+			if(a.isPresent()) {
+			
+				List<TransLog> tl = transRepo.findByFromAcc(a.get().getAccountId());
+				
+				List<TransLogDTO> tldto = new ArrayList();
+				
+				for(TransLog t: tl) {
+					
+					TransLogDTO tdto = modelMapper.map(t, TransLogDTO.class);
+					
+					tldto.add(tdto);
+					
+				}
+		//		System.out.println(88888888);
+		//		System.out.println(tldto);
+				
+				List<TransLog> tl1 = transRepo.findByToAcc(a.get().getAccountId());
+				
+				for(TransLog t: tl1) {
+					
+					TransLogDTO tdto = modelMapper.map(t, TransLogDTO.class);
+					
+					tldto.add(tdto);
+					
+				}
+				System.out.println(tldto);
+				acc[4] = tldto;
+				System.out.println(acc[4]);
+			}
+			
+			//run getacc meth to populate this
+			//acc[4] = accList.get(i).getTranslog();
+			
+			arr[i] = acc;
+		
+		}
+		
+		return arr ;
+		
+	}
+
 
 	@Override
 	public AccountDTO updateBalance(Long accid, Map<Object, Object> fields) {
@@ -807,6 +895,12 @@ public class ServiceDAOImpl implements ServiceDAO{
 		
 		return null;
 	
+	}
+
+	@Override
+	public void test() {
+		System.out.println("testing");
+		
 	}
 	
 }

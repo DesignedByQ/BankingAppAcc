@@ -1,6 +1,14 @@
 package com.techprj.accounts.entity;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.logging.Logger;
+
+import org.springframework.data.relational.core.mapping.Table;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,15 +16,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
+import com.techprj.accounts.dto.TransLogDTO;
 import com.techprj.banking.entity.UserProfile;
 
 import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name="trans")
-public class TransLog {
+public class TransLog implements Serializable {
+	private static final Logger LOGGER = Logger.getLogger(TransLog.class.getName());
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -47,7 +55,7 @@ public class TransLog {
 		this.reference = reference;
 		this.newBal = newBal;
 		this.toAcc = to;
-		//this.account = account;
+		this.account = account;
 	}
 
 	public Long getTransLogId() {
@@ -128,5 +136,19 @@ public class TransLog {
 				+ ", amount=" + amount + ", reference=" + reference + ", newBal=" + newBal + ", toAcc=" + toAcc
 				+ ", account=" + account + "]";
 	}
+	
+    public static TransLog deserialize(byte[] bytes) {
+        LOGGER.info("Deserialization started.");
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+             ObjectInput in = new ObjectInputStream(bis)) {
+            TransLog obj = (TransLog) in.readObject();
+            LOGGER.info("Deserialization successful.");
+            return obj;
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.warning("Deserialization failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 }

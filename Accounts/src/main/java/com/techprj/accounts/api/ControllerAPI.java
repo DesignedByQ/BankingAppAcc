@@ -39,6 +39,18 @@ public class ControllerAPI {
 		return ResponseEntity.status(HttpStatus.OK).body(serviceDAOImpl.getAccount(accountid));
 	}
 	
+	@GetMapping(value="/getaccounts/{userid}", consumes = {MediaType.ALL_VALUE}, produces = {"application/json", "application/xml"})
+	public Object[] getAccsByUserId(@PathVariable("userid") Long userid) {
+		return serviceDAOImpl.getAccounts(userid);
+	}
+	
+	@GetMapping(value="/test", consumes = {MediaType.ALL_VALUE}, produces = {"application/json", "application/xml"})
+	public Object tester() {
+		System.out.println(111);
+		serviceDAOImpl.test();
+		return ResponseEntity.status(HttpStatus.OK);
+	}
+	
 	@PatchMapping(value="/updatebalance/{accid}", consumes = {MediaType.ALL_VALUE})
 	public ResponseEntity<AccountDTO> updateBal(@PathVariable("accid") Long accid, @RequestBody Map<Object, Object> fields) {
 		

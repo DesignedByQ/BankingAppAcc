@@ -1,9 +1,16 @@
 package com.techprj.accounts.entity;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
+
+import org.springframework.data.relational.core.mapping.Table;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,7 +22,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
+
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +32,7 @@ import com.techprj.accounts.dto.TransLogDTO;
 @Entity
 @Table(name="accounts")
 public class Account implements Serializable {
+	private static final Logger LOGGER = Logger.getLogger(Account.class.getName());
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -100,8 +108,6 @@ public class Account implements Serializable {
 	
 	public List<TransLogDTO> getTranslogDTO() {
 		
-		//List<TransLogDTO> tl = (List<TransLogDTO>) modelMapper.map(translog, TransLogDTO.class);
-		
 		List<TransLogDTO> tdtol = new ArrayList();
 		
 		for(TransLog t: translog) {
@@ -134,5 +140,20 @@ public class Account implements Serializable {
 		return "Account [accountId=" + accountId + ", sortCode=" + sortCode + ", type=" + type + ", balance=" + balance + ", userProfileID="
 				+ Arrays.toString(userProfileID) + ", translog=" + translog + "]";
 	}
+	
+    public static Account deserialize(byte[] bytes) {
+        LOGGER.info("Deserialization started.");
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+             ObjectInput in = new ObjectInputStream(bis)) {
+            Account obj = (Account) in.readObject();
+            LOGGER.info("Deserialization successful.");
+            return obj;
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.warning("Deserialization failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 	
 }

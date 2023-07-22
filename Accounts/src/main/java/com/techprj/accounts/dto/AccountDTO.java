@@ -1,8 +1,13 @@
 package com.techprj.accounts.dto;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +18,7 @@ import com.techprj.banking.dto.UserProfileDTO;
 import com.techprj.banking.dto.UserProfileDTODeserializer;
 
 public class AccountDTO implements Serializable {
+	private static final Logger LOGGER = Logger.getLogger(AccountDTO.class.getName());
 	
 	private Long accountId;
 	private Long sortCode;
@@ -21,9 +27,6 @@ public class AccountDTO implements Serializable {
 	//@JsonDeserialize(using = UserProfileDTODeserializer.class)
 	private List<UserProfileDTO> userProfileDTO;
 	private List<TransLogDTO> transLogDTO;
-	
-	@Autowired
-	ModelMapper modelMapper;
 	
 	public AccountDTO() {
 		super();
@@ -95,5 +98,20 @@ public class AccountDTO implements Serializable {
 		return "AccountDTO [accountId=" + accountId + ", sortCode=" + sortCode + ", type=" + type + ", balance="
 				+ balance + ", userProfileDTO=" + userProfileDTO + ", transLogDTO=" + transLogDTO + "]";
 	}
+	
+    public static AccountDTO deserialize(byte[] bytes) {
+        LOGGER.info("Deserialization started.");
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+             ObjectInput in = new ObjectInputStream(bis)) {
+            AccountDTO obj = (AccountDTO) in.readObject();
+            LOGGER.info("Deserialization successful.");
+            return obj;
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.warning("Deserialization failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 }
