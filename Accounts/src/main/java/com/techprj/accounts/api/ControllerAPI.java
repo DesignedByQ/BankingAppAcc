@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techprj.accounts.dto.AccountDTO;
 import com.techprj.accounts.service.ServiceDAOImpl;
+import com.techprj.banking.dto.UserProfileDTO;
 
 @RestController
 @RequestMapping("/api")
@@ -42,13 +44,6 @@ public class ControllerAPI {
 	@GetMapping(value="/getaccounts/{userid}", consumes = {MediaType.ALL_VALUE}, produces = {"application/json", "application/xml"})
 	public Object[] getAccsByUserId(@PathVariable("userid") Long userid) {
 		return serviceDAOImpl.getAccounts(userid);
-	}
-	
-	@GetMapping(value="/test", consumes = {MediaType.ALL_VALUE}, produces = {"application/json", "application/xml"})
-	public Object tester() {
-		System.out.println(111);
-		serviceDAOImpl.test();
-		return ResponseEntity.status(HttpStatus.OK);
 	}
 	
 	@PatchMapping(value="/updatebalance/{accid}", consumes = {MediaType.ALL_VALUE})
@@ -86,5 +81,10 @@ public class ControllerAPI {
 		System.out.println(fields);
 		return ResponseEntity.status(HttpStatus.OK).body(serviceDAOImpl.updateBalanceExt(accid, accid1, fields));
 	}
-
+	
+	@DeleteMapping(value = "/deleteaccount/{accid}", consumes = {MediaType.ALL_VALUE}, produces = {"application/json", "application/xml"})
+	public ResponseEntity<String> delAccount(@PathVariable("accid") Long accid) {
+		return ResponseEntity.status(HttpStatus.OK).body(serviceDAOImpl.delAccountService(accid));
+	}
+ 
 }

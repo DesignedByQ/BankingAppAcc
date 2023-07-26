@@ -119,6 +119,7 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 		//System.out.println(adto);
 		
 		//AccountDTO adto1 = new AccountDTO();
+		//send a message from here to 8080 to now dig out the user add the new acc and resave it
 		return adto;
 		
 	}
@@ -219,7 +220,7 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 	@Override
 	public Object[] getAccounts(long userid) {
 		
-		System.out.println("********************************");
+		System.out.println("********************************getaccounts");
 		
 		List<Account> allAccounts = accountRepo.findAll();
 		
@@ -293,9 +294,9 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 					tldto.add(tdto);
 					
 				}
-				System.out.println(tldto);
+				//System.out.println(tldto);
 				acc[4] = tldto;
-				System.out.println(acc[4]);
+				//System.out.println(acc[4]);
 			}
 			
 			//run getacc meth to populate this
@@ -304,6 +305,7 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 			arr[i] = acc;
 		
 		}
+		//System.out.println(arr);
 		
 		return arr ;
 		
@@ -320,15 +322,15 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 		//Create transaction
 		TransLogDTO trans = new TransLogDTO();
 		trans.setDate(LocalDate.now());
-		trans.setAmount(Double.parseDouble(fields.get("balance").toString())-a.get().getBalance());
+		trans.setAmount(Double.parseDouble(fields.get("balance").toString()));
 		trans.setFrom((long) 99999999);
 		trans.setOldBal(a.get().getBalance());
 		trans.setTo(accid);
-		trans.setNewBal(Double.parseDouble(fields.get("balance").toString()));
+		trans.setNewBal(a.get().getBalance() + Double.parseDouble(fields.get("balance").toString()));
 		trans.setReference("Bank Clerk Transaction");
 		
 		TransLog transConv = modelMapper.map(trans, TransLog.class);
-		
+			
 		//List<TransLog> tll = new ArrayList<>();
 		
 		//tll.add(modelMapper.map(trans, TransLog.class));
@@ -337,11 +339,11 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 		
 		if(a.isPresent()) {
 			
-			//a.get().setTranslog(tll);
+			Double bal = a.get().getBalance();
 			
-			//List<TransLog> fm = (List<TransLog>) modelMapper.map(fields.get("transLogDTO"), TransLog.class);
+			bal += Double.parseDouble(fields.get("balance").toString());
 			
-			//fields.put(tll, a)
+			fields.put("balance", bal);
 			
 	        fields.forEach((key, value) -> {
 	        	
@@ -509,7 +511,7 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 	        aConvEnt.setUserProfileID(ids);
 	              
 	        //create transaction list from existing logs then add the new transaction before saving the entity
-	        //why isnt it storing previous transactons
+	       
 	        List<TransLog> tlog = new ArrayList();
 	        
 	        if(a.get().getTranslog() != null) {
@@ -898,10 +900,20 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 	}
 
 	@Override
-	public void test() {
-		System.out.println("testing");
+	public String delAccountService(Long accid) {
+			
+		accountRepo.deleteById(accid);
 		
+		Optional<Account> oa = accountRepo.findById(accid);
+		
+		if(oa.isEmpty()) {
+			
+			return "Account number " + accid + " was closed successfully!";
+		}
+		System.out.println("Account closure failed!");
+		return "Account closure failed!";
 	}
+
 	
 }
 	
