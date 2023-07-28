@@ -46,35 +46,12 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 		
 		Long[] ids = new Long[2];
 		
-		//System.out.println("----------------------------");
-		
-		//System.out.println(accountDTO.getUserProfileDTO());
-		
-		//System.out.println("----------------------------");
-		
-		//System.out.println(accountDTO.getUserProfileDTO().get(0).getIdUserProfile());
-		
 		for(int i = 0; i < accountDTO.getUserProfileDTO().size(); i++) {
-			
-			//System.out.println("----------------------------");
-			
-			//System.out.println(accountDTO.getUserProfileDTO().get(i).getIdUserProfile());
 			
 			ids[i] = accountDTO.getUserProfileDTO().get(i).getIdUserProfile();
 			
-			//System.out.println("----------------------------");
-			
-			//System.out.println(ids[i]);
 		}
-		
-//		for(UserProfileDTO up: accountDTO.getUserProfileDTO()) {
-//				
-//		}
-//		ids[0] = accountDTO.getUserProfileDTO()[0].getIdUserProfile();
-//		
-//		if(accountDTO.getUserProfileDTO().length > 1)
-//			ids[1] = accountDTO.getUserProfileDTO()[1].getIdUserProfile();
-		
+				
 		//System.out.println(ids[0]);
 		Account a = new Account();
 		a.setBalance(accountDTO.getBalance());
@@ -115,31 +92,22 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 		}	
 		
 		adto.setUserProfileDTO(upl);
-		
-		//System.out.println(adto);
-		
-		//AccountDTO adto1 = new AccountDTO();
-		//send a message from here to 8080 to now dig out the user add the new acc and resave it
+
 		return adto;
 		
 	}
 
 	@Override
 	public AccountDTO getAccount(Long accountid) {
-		//System.out.println(111);
-		//System.out.println(accountid);
+
 		Optional<Account> a = accountRepo.findById(accountid);
-		//System.out.println(11111111);
-		//System.out.println(a.get());
+
 		AccountDTO adto1 = new AccountDTO();
 		
 		if(a.isPresent()) {
-//			System.out.println(2222222);
-//			System.out.println(a.get());
 		
 			List<UserProfileDTO> upl = new ArrayList();
 			
-			//when creatiing an account need to inject the up ids correct instead of null
 			Long id = a.get().getUserProfileID()[0];
 			//Long id2 = Long.parseLong(id);
 			//System.out.println(id.TYPE);
@@ -147,16 +115,9 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 			String url = "http://localhost:8080/api/getprobyid/"+id;
 		
 			UserProfileDTO updto = restTemplate.getForObject(url, UserProfileDTO.class);
-//			System.out.println(33333333);
-//			System.out.println(updto);
+
 			upl.add(updto);
-			
-//			System.out.println("444444444444444");
-//			System.out.println(a.get());
-			//System.out.println(a.get().getUserProfileID()[1]);
-//			System.out.println(5555555);
-//			System.out.println(upl.get(0));
-			
+
 			if(a.get().getUserProfileID()[1] != null) {
 				
 				Long id1 = a.get().getUserProfileID()[1];
@@ -165,13 +126,8 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 				UserProfileDTO updto1 = restTemplate.getForObject("http://localhost:8080/api/getprobyid/"+id1, UserProfileDTO.class);
 				
 				upl.add(updto1);
-//				System.out.println(666666);
-//				System.out.println(upl.get(1));
 				
 			}
-//			System.out.println(7777777);
-//			System.out.println(a.get());
-			//System.out.println(upl.get(1));
 			
 			AccountDTO adto = new AccountDTO();
 			adto.setAccountId(a.get().getAccountId());
@@ -190,8 +146,6 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 				tldto.add(tdto);
 				
 			}
-//			System.out.println(88888888);
-//			System.out.println(tldto);
 			
 			List<TransLog> tl1 = transRepo.findByToAcc(a.get().getAccountId());
 			
@@ -205,15 +159,12 @@ public class ServiceDAOImpl implements ServiceDAO, Serializable {
 			
 			adto.setTransLogDTO(tldto);
 			adto.setUserProfileDTO(upl);
-//			System.out.println(99999);
-//			System.out.println(a.get());
-//			System.out.println(upl.get(0));
+			
 			return adto;
 			
 		}
 		
 		return adto1;
-		//return null;
 		
 	}
 	

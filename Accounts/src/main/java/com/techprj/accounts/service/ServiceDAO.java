@@ -17,7 +17,7 @@ public interface ServiceDAO {
 
 	AccountDTO updateBalanceExt(Long accid, Long accid1, Map<Object, Object> fields);
 
-	public Object[] getAccounts(long userid);
+	Object[] getAccounts(long userid);
 	
 	String delAccountService(Long accid);
 
